@@ -11,9 +11,11 @@ class MeshbluRespondService
       onceCallback @_createError 408, 'Request Timed out'
     , 2000
 
-    onceCallback = _.once =>
+    onceCallback = _.once (error) =>
       clearTimeout timeout
-      callback arguments...
+      meshbluConn.close (closeError) =>
+        return callback error if error?
+        callback closeError
 
     meshbluConn = @meshblu.createConnection meshbluConfig
 
@@ -25,7 +27,7 @@ class MeshbluRespondService
 
     meshbluConn.once 'ready', =>
       meshbluConn.on 'message', (message) =>
-        onceCallback null, message if fullMessage.payload?.responseId == message.payload?.responseId
+        onceCallback null if fullMessage.payload?.responseId == message.payload?.responseId
       meshbluConn.message fullMessage
 
     meshbluConn.once 'notReady', =>
