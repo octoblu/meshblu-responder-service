@@ -4,7 +4,7 @@ shmock  = require '@octoblu/shmock'
 Server  = require '../../src/server'
 FakeMeshblu = require '../fake-meshblu'
 
-describe 'Send Message', ->
+xdescribe 'Update', ->
   beforeEach (done) ->
     @meshblu = shmock 0xd00d
 
@@ -32,7 +32,7 @@ describe 'Send Message', ->
   afterEach (done) ->
     @meshblu.close done
 
-  describe 'On POST /messages', ->
+  describe 'On POST /config', ->
     describe 'when it succeeds', ->
       beforeEach (done) ->
         userAuth = new Buffer('user-uuid:user-token').toString 'base64'
@@ -70,7 +70,7 @@ describe 'Send Message', ->
           .set 'Authorization', "Basic #{userAuth}"
           .reply 200, uuid: 'user-uuid', token: 'user-token'
 
-        @fakeMeshblu.failOnEvent 'message'
+        @fakeMeshblu.failOnEvent 'update'
 
         options =
           uri: '/messages'

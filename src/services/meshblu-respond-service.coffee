@@ -1,5 +1,6 @@
-request     = require 'request'
-_           = require 'lodash'
+request = require 'request'
+_       = require 'lodash'
+debug   = require('debug')('meshblu-responder-service:service')
 
 class MeshbluRespondService
   constructor: ({@uuid, @meshblu}) ->
@@ -8,14 +9,17 @@ class MeshbluRespondService
 
   message: ({meshbluConfig, message}, callback) =>
     timeout = setTimeout =>
+      debug 'timing out request'
       onceCallback @_createError 408, 'Request Timed out'
     , 2000
 
-    onceCallback = _.once (error) =>
+    onceCallback = _.once (error, message) =>
+      debug 'calling callback'
       clearTimeout timeout
       meshbluConn.close (closeError) =>
+        debug 'closing connection'
         return callback error if error?
-        callback closeError
+        callback closeError, message
 
     meshbluConn = @meshblu.createConnection meshbluConfig
 
@@ -27,8 +31,10 @@ class MeshbluRespondService
 
     meshbluConn.once 'ready', =>
       meshbluConn.on 'message', (message) =>
-        onceCallback null if fullMessage.payload?.responseId == message.payload?.responseId
+        debug 'received message', message
+        onceCallback null, message if fullMessage.payload?.responseId == message.payload?.responseId
       meshbluConn.message fullMessage
+      debug 'sending message', fullMessage
 
     meshbluConn.once 'notReady', =>
       onceCallback @_createError 500, 'Unable to connect to Meshblu'

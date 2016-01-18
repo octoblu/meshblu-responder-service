@@ -57,8 +57,8 @@ describe 'Send Message', ->
       it 'should auth the device', ->
         @authDevice.done()
 
-      it 'should return a 204', ->
-        expect(@response.statusCode).to.equal 204
+      it 'should return a 200', ->
+        expect(@response.statusCode).to.equal 200
 
     describe 'when it times out', ->
       beforeEach (done) ->
