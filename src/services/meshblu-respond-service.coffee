@@ -10,16 +10,14 @@ class MeshbluRespondService
   message: ({meshbluConfig, message}, callback) =>
     timeout = setTimeout =>
       debug 'timing out request'
-      onceCallback @_createError 408, 'Request Timed out'
-    , 2000
+      onceCallback @_createError 408, 'Request Timeout'
+    , 3000
 
     onceCallback = _.once (error, message) =>
       debug 'calling callback'
       clearTimeout timeout
-      meshbluConn.close (closeError) =>
-        debug 'closing connection'
-        return callback error if error?
-        callback closeError, message
+      meshbluConn.close()
+      callback error, message
 
     meshbluConn = @meshblu.createConnection meshbluConfig
 

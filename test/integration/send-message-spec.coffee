@@ -62,7 +62,7 @@ describe 'Send Message', ->
 
     describe 'when it times out', ->
       beforeEach (done) ->
-        @timeout 3000
+        @timeout 6000
         userAuth = new Buffer('user-uuid:user-token').toString 'base64'
 
         @authDevice = @meshblu
