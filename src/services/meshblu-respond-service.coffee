@@ -23,12 +23,12 @@ class MeshbluRespondService
         responseId: @uuid.v1()
         message: message
 
-    meshbluConn.on 'ready', ->
+    meshbluConn.once 'ready', =>
       meshbluConn.on 'message', (message) =>
         onceCallback null, message if fullMessage.payload?.responseId == message.payload?.responseId
       meshbluConn.message fullMessage
 
-    meshbluConn.on 'notReady', ->
+    meshbluConn.once 'notReady', =>
       onceCallback @_createError 500, 'Unable to connect to Meshblu'
 
   _createError: (code, message) =>

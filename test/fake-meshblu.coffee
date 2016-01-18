@@ -4,13 +4,24 @@ _              = require 'lodash'
 class FakeMeshblu extends EventEmitter
   constructor: ->
 
+  failOnEvent: (event) =>
+    @_failOnEvent = event
+
+  fireNotReady: =>
+    @_fireNotReady = true
+
+  _emit: (event) =>
+    return if @_failOnEvent == event
+    @emit arguments...
+
   createConnection: ->
     _.delay =>
-      @emit 'ready'
+      return @_emit 'notReady' if @_fireNotReady
+      @_emit 'ready'
     , 10
     return @
 
   message: (message) ->
-    @emit 'message', message
+    @_emit 'message', message
 
 module.exports = FakeMeshblu
