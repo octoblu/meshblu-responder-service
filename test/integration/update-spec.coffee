@@ -4,7 +4,7 @@ shmock  = require '@octoblu/shmock'
 Server  = require '../../src/server'
 FakeMeshblu = require '../fake-meshblu'
 
-xdescribe 'Update', ->
+describe 'Update', ->
   beforeEach (done) ->
     @meshblu = shmock 0xd00d
 
@@ -43,7 +43,7 @@ xdescribe 'Update', ->
           .reply 200, uuid: 'user-uuid', token: 'user-token'
 
         options =
-          uri: '/messages'
+          uri: '/config'
           baseUrl: "http://localhost:#{@serverPort}"
           auth:
             username: 'user-uuid'
@@ -57,12 +57,12 @@ xdescribe 'Update', ->
       it 'should auth the device', ->
         @authDevice.done()
 
-      it 'should return a 204', ->
-        expect(@response.statusCode).to.equal 204
+      it 'should return a 200', ->
+        expect(@response.statusCode).to.equal 200
 
     describe 'when it times out', ->
       beforeEach (done) ->
-        @timeout 3000
+        @timeout 5000
         userAuth = new Buffer('user-uuid:user-token').toString 'base64'
 
         @authDevice = @meshblu
@@ -70,10 +70,10 @@ xdescribe 'Update', ->
           .set 'Authorization', "Basic #{userAuth}"
           .reply 200, uuid: 'user-uuid', token: 'user-token'
 
-        @fakeMeshblu.failOnEvent 'update'
+        @fakeMeshblu.failOnEvent 'config'
 
         options =
-          uri: '/messages'
+          uri: '/config'
           baseUrl: "http://localhost:#{@serverPort}"
           auth:
             username: 'user-uuid'
@@ -103,7 +103,7 @@ xdescribe 'Update', ->
         @fakeMeshblu.fireNotReady()
 
         options =
-          uri: '/messages'
+          uri: '/config'
           baseUrl: "http://localhost:#{@serverPort}"
           auth:
             username: 'user-uuid'

@@ -24,6 +24,9 @@ class FakeMeshblu extends EventEmitter
   message: (message) ->
     @_emit 'message', message
 
+  update: (properties) ->
+    @_emit 'config', properties
+
   close: (callback=->) -> callback()
 
 module.exports = FakeMeshblu

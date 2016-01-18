@@ -37,6 +37,34 @@ class MeshbluRespondService
     meshbluConn.once 'notReady', =>
       onceCallback @_createError 500, 'Unable to connect to Meshblu'
 
+  config: ({meshbluConfig, properties}, callback) =>
+    timeout = setTimeout =>
+      debug 'timing out request'
+      onceCallback @_createError 408, 'Request Timeout'
+    , 3000
+
+    onceCallback = _.once (error, message) =>
+      debug 'calling callback'
+      clearTimeout timeout
+      meshbluConn.close()
+      callback error, message
+
+    meshbluConn = @meshblu.createConnection meshbluConfig
+
+    responseId = @uuid.v1()
+    properties.uuid = meshbluConfig.uuid
+    properties[responseId] = true
+
+    meshbluConn.once 'ready', =>
+      meshbluConn.on 'config', (device) =>
+        debug 'received device', device
+        onceCallback null, device if device[responseId]?
+      meshbluConn.update properties
+      debug 'updating device', properties
+
+    meshbluConn.once 'notReady', =>
+      onceCallback @_createError 500, 'Unable to connect to Meshblu'
+
   _createError: (code, message) =>
     error = new Error message
     error.code = code if code?

@@ -6,5 +6,6 @@ class Router
     meshbluRespondController = new MeshbluRespondController {@meshbluRespondService}
 
     app.post '/messages', meshbluRespondController.message
+    app.post '/config', meshbluRespondController.config
 
 module.exports = Router
