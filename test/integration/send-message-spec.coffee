@@ -20,7 +20,7 @@ describe 'Send Message', ->
     uuid =
       v1: sinon.stub().returns 'some-response-uuid'
 
-    @server = new Server serverOptions, {meshbluConfig, uuid, meshblu: @fakeMeshblu}
+    @server = new Server serverOptions, {meshbluConfig, uuid, Meshblu: @fakeMeshblu}
 
     @server.run =>
       @serverPort = @server.address().port

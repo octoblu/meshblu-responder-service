@@ -1,71 +1,45 @@
-request = require 'request'
-_       = require 'lodash'
-debug   = require('debug')('meshblu-responder-service:service')
+_              = require 'lodash'
+request        = require 'request'
+ResponderModel = require '../models/responder-model'
+debug          = require('debug')('meshblu-responder-service:service')
 
 class MeshbluRespondService
-  constructor: ({@uuid, @meshblu}) ->
+  constructor: ({@uuid, @Meshblu}) ->
     @uuid ?= require 'uuid'
-    @meshblu ?= require 'meshblu'
 
   message: ({meshbluConfig, message}, callback) =>
-    timeout = setTimeout =>
-      debug 'timing out request'
-      onceCallback @_createError 408, 'Request Timeout'
-    , 3000
+    onReady = (meshblu, next) =>
+      fullMessage =
+        devices: [meshbluConfig.uuid]
+        payload:
+          responseId: @uuid.v1()
+          message: message
 
-    onceCallback = _.once (error, message) =>
-      debug 'calling callback'
-      clearTimeout timeout
-      meshbluConn.close()
-      callback error, message
+      meshblu.on 'message', (message) =>
+        next null if fullMessage.payload?.responseId == message.payload?.responseId
+      meshblu.message fullMessage
 
-    meshbluConn = @meshblu.createConnection meshbluConfig
-
-    fullMessage =
-      devices: [meshbluConfig.uuid]
-      payload:
-        responseId: @uuid.v1()
-        message: message
-
-    meshbluConn.once 'ready', =>
-      meshbluConn.on 'message', (message) =>
-        debug 'received message', message
-        onceCallback null, message if fullMessage.payload?.responseId == message.payload?.responseId
-      meshbluConn.message fullMessage
-      debug 'sending message', fullMessage
-
-    meshbluConn.once 'notReady', =>
-      onceCallback @_createError 500, 'Unable to connect to Meshblu'
+    responderModel = new ResponderModel {meshbluConfig, onReady, @Meshblu}
+    responderModel.do (error) =>
+      return callback @_createError error if error?
+      callback null
 
   config: ({meshbluConfig, properties}, callback) =>
-    timeout = setTimeout =>
-      debug 'timing out request'
-      onceCallback @_createError 408, 'Request Timeout'
-    , 3000
+    onReady = (meshblu, callback) =>
+      responseId = @uuid.v1()
+      properties.uuid = meshbluConfig.uuid
+      properties[responseId] = true
 
-    onceCallback = _.once (error, message) =>
-      debug 'calling callback'
-      clearTimeout timeout
-      meshbluConn.close()
-      callback error, message
+      meshblu.on 'config', (device) =>
+        callback null if device[responseId]?
+      meshblu.update properties
 
-    meshbluConn = @meshblu.createConnection meshbluConfig
+    responderModel = new ResponderModel {meshbluConfig, @Meshblu, onReady}
+    responderModel.do (error) =>
+      return callback @_createError error if error?
+      callback null
 
-    responseId = @uuid.v1()
-    properties.uuid = meshbluConfig.uuid
-    properties[responseId] = true
-
-    meshbluConn.once 'ready', =>
-      meshbluConn.on 'config', (device) =>
-        debug 'received device', device
-        onceCallback null, device if device[responseId]?
-      meshbluConn.update properties
-      debug 'updating device', properties
-
-    meshbluConn.once 'notReady', =>
-      onceCallback @_createError 500, 'Unable to connect to Meshblu'
-
-  _createError: (code, message) =>
+  _createError: ({code, message}) =>
     error = new Error message
     error.code = code if code?
     return error

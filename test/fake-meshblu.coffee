@@ -3,6 +3,8 @@ _              = require 'lodash'
 
 class FakeMeshblu extends EventEmitter
   constructor: ->
+    @socket =
+      on: =>
 
   failOnEvent: (event) =>
     @_failOnEvent = event
