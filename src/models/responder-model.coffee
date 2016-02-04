@@ -14,13 +14,15 @@ class ResponderModel
     @meshblu.on 'notReady', =>
       debug 'error'
       callback message: 'Unable to connect to meshblu', code: 500
-    @meshblu.on 'ready', =>
+    @meshblu.once 'ready', =>
       debug 'connected'
       callback null, @meshblu
 
+    @meshblu.on 'disconnect', => debug 'disconnected'
+
   _disconnect: (callback) =>
     @meshblu.close()
-    debug 'disconnected'
+    debug 'closed connection'
     callback null
 
   _afterTask: (callback) =>

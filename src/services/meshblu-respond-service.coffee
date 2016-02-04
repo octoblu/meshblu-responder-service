@@ -25,13 +25,13 @@ class MeshbluRespondService
       callback null
 
   config: ({meshbluConfig, properties}, callback) =>
-    onReady = (meshblu, callback) =>
+    onReady = (meshblu, next) =>
       responseId = @uuid.v1()
       properties.uuid = meshbluConfig.uuid
-      properties[responseId] = true
+      properties.responseId = responseId
 
       meshblu.on 'config', (device) =>
-        callback null if device[responseId]?
+        next null if device.responseId = responseId
       meshblu.update properties
 
     responderModel = new ResponderModel {meshbluConfig, @Meshblu, onReady}
