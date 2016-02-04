@@ -5,14 +5,12 @@ bodyParser         = require 'body-parser'
 errorHandler       = require 'errorhandler'
 meshbluHealthcheck = require 'express-meshblu-healthcheck'
 meshbluAuth        = require 'express-meshblu-auth'
-MeshbluConfig      = require 'meshblu-config'
 debug              = require('debug')('meshblu-responder-service:server')
 Router             = require './router'
 MeshbluRespondService = require './services/meshblu-respond-service'
 
 class Server
   constructor: ({@disableLogging, @port}, {@meshbluConfig, @uuid, @Meshblu})->
-    @meshbluConfig ?= new MeshbluConfig().toJSON()
 
   address: =>
     @server.address()
